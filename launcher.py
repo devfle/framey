@@ -5,6 +5,10 @@ import math
 import badger2040
 import badger_os
 import jpegdec
+from setup import start_setup
+
+# start the setup process
+start_setup()
 
 APP_DIR = "/apps"
 FONT_SIZE = 2
