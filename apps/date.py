@@ -6,6 +6,7 @@ import ntptime
 
 display = badger2040.Badger2040()
 display.led(128)
+DATE_SUCCESSFULL_SET = False
 
 date_data = {"date": "Invalid date_data.json file", "font_size": 2}
 
@@ -19,6 +20,9 @@ def set_local_rtc():
             if display.isconnected():
                 ntptime.settime()
                 badger2040.pico_rtc_to_pcf()
+
+                global DATE_SUCCESSFULL_SET
+                DATE_SUCCESSFULL_SET = True
         except (RuntimeError, OSError) as e:
             print(f"Wireless Error: {e.value}")
     else:
@@ -37,7 +41,8 @@ def get_days_since_start():
 
 
 def render_counter():
-    set_local_rtc()
+    if not DATE_SUCCESSFULL_SET:
+        set_local_rtc()
 
     display.set_font("bitmap8")
     display.set_pen(15)
