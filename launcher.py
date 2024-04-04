@@ -135,6 +135,13 @@ def button(pin):
 
 if exited_to_launcher or not woken_by_button:
     wait_for_user_to_release_buttons()
+
+    # reset state, we should move this in the specific app
+    date_data = {"date": "(0, 0, 0, 0, 0, 0 ,0, 0)", "font_size": 2, "rtc_set": False}
+    badger_os.state_load("date_data", date_data)
+    date_data["rtc_set"] = False
+    badger_os.state_save("date_data", date_data)
+
     display.set_update_speed(badger2040.UPDATE_MEDIUM)
     render()
 

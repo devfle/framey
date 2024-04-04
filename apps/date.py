@@ -2,28 +2,40 @@ import badger2040
 import badger_os
 import math
 import time
+import machine
 import ntptime
 
 display = badger2040.Badger2040()
 display.led(128)
 
-date_data = {"date": "Invalid date_data.json file", "font_size": 2}
+date_data = {"date": "(0, 0, 0, 0, 0, 0 ,0, 0)", "font_size": 2, "rtc_set": False}
 
 badger_os.state_load("date_data", date_data)
 
 
 def set_local_rtc():
+    
+    try:
+        # sync the board rtc chip time to the pico RTC
+        badger2040.pcf_to_pico_rtc()
+    except RuntimeError:
+        pass
+
+    if date_data["rtc_set"]:
+        return
+
     if badger2040.is_wireless():
         try:
             display.connect()
             if display.isconnected():
                 ntptime.settime()
+                # sync the pico RTC time to the board rtc chip
                 badger2040.pico_rtc_to_pcf()
+
+                date_data["rtc_set"] = True
+                badger_os.state_save("date_data", date_data)
         except (RuntimeError, OSError) as e:
             print(f"Wireless Error: {e.value}")
-    else:
-        # set the rtc from "Thonny" software
-        badger2040.pcf_to_pico_rtc()
 
 
 def get_days_since_start():
@@ -31,7 +43,8 @@ def get_days_since_start():
     start_date = time.mktime(eval(date_data["date"]))
 
     # get the current time from rtc
-    current_date = time.mktime(time.localtime())
+    rtc = machine.RTC()
+    current_date = time.mktime(rtc.datetime())
 
     return str(int((current_date - start_date) / 86400))
 
